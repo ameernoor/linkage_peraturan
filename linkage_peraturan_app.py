@@ -9,8 +9,8 @@ from io import BytesIO
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # Ensure this is correct
 
 # Function to extract images from PDF
-def extract_images_from_pdf(pdf_path):
-    doc = fitz.open(pdf_path)
+def extract_images_from_pdf(pdf_file):
+    doc = fitz.open(pdf_file)
     images = []
     
     for page_num in range(doc.page_count):
@@ -32,31 +32,25 @@ def ocr_image(image):
 
 # Streamlit UI setup
 st.title("Regulation Document OCR Processor")
-st.sidebar.header("Select a PDF to Process")
+st.sidebar.header("Upload a PDF to Process")
 
-# Folder path containing the regulations
-folder_path = r"E:\Gawean\OTL\!Potensi Inovasi OTL\Daftar Peraturan"
+# Streamlit file uploader to allow file upload
+uploaded_pdf = st.sidebar.file_uploader("Choose a PDF file", type="pdf")
 
-# List files in the folder for the user to select
-pdf_files = os.listdir(folder_path)
-selected_pdf = st.sidebar.selectbox("Select a PDF", pdf_files)
-
-# Extract text from selected PDF
-if selected_pdf:
-    pdf_file_path = os.path.join(folder_path, selected_pdf)
-    
-    # Extract images from PDF and apply OCR
-    images = extract_images_from_pdf(pdf_file_path)
+# Extract text from the uploaded PDF
+if uploaded_pdf is not None:
+    # Extract images from the uploaded PDF and apply OCR
+    images = extract_images_from_pdf(uploaded_pdf)
     ocr_text = ""
     for image in images:
         ocr_text += ocr_image(image)
     
     # Display the extracted OCR text
-    st.subheader(f"Extracted OCR Text from {selected_pdf}")
+    st.subheader(f"Extracted OCR Text from {uploaded_pdf.name}")
     st.text_area("OCR Output", ocr_text, height=400)
     
     # Optionally, save the output to a file
-    output_file_path = os.path.join(folder_path, f"{selected_pdf}_ocr_output.txt")
+    output_file_path = os.path.join("output", f"{uploaded_pdf.name}_ocr_output.txt")
     with open(output_file_path, 'w', encoding='utf-8') as f:
         f.write(ocr_text)
     st.write(f"OCR output saved to: {output_file_path}")
