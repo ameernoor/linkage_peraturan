@@ -1,12 +1,12 @@
 import streamlit as st
 import os
 import fitz  # PyMuPDF
-import pytesseract
+import easyocr  # EasyOCR as an alternative to pytesseract
 from PIL import Image
 from io import BytesIO
 
-# Set the path to the Tesseract executable
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # Ensure this is correct
+# Initialize the EasyOCR reader (with default languages)
+reader = easyocr.Reader(['en'])
 
 # Function to extract images from PDF
 def extract_images_from_pdf(pdf_file):
@@ -27,9 +27,13 @@ def extract_images_from_pdf(pdf_file):
     
     return images
 
-# Function to apply OCR to an image
+# Function to apply OCR to an image using EasyOCR
 def ocr_image(image):
-    return pytesseract.image_to_string(image)
+    # Use EasyOCR to perform OCR on the image
+    result = reader.readtext(image)
+    # Join all the detected text
+    ocr_text = " ".join([text[1] for text in result])
+    return ocr_text
 
 # Streamlit UI setup
 st.title("Regulation Document OCR Processor")
