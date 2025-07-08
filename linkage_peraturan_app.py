@@ -29,8 +29,14 @@ def extract_images_from_pdf(pdf_file):
 
 # Function to apply OCR to an image using EasyOCR
 def ocr_image(image):
-    # Use EasyOCR to perform OCR on the image
-    result = reader.readtext(image)
+    # Convert PIL Image to bytes
+    img_byte_arr = BytesIO()
+    image.save(img_byte_arr, format='PNG')
+    img_byte_arr = img_byte_arr.getvalue()
+    
+    # Use EasyOCR to perform OCR on the image bytes
+    result = reader.readtext(img_byte_arr)
+    
     # Join all the detected text
     ocr_text = " ".join([text[1] for text in result])
     return ocr_text
