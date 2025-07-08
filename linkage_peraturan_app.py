@@ -46,12 +46,25 @@ if uploaded_pdf is not None:
     for image in images:
         ocr_text += ocr_image(image)
     
-    # Display the extracted OCR text
-    st.subheader(f"Extracted OCR Text from {uploaded_pdf.name}")
-    st.text_area("OCR Output", ocr_text, height=400)
+    # Create a download link for the OCR result
+    output_file_path = f"{uploaded_pdf.name}_ocr_output.txt"
     
-    # Optionally, save the output to a file
-    output_file_path = os.path.join("output", f"{uploaded_pdf.name}_ocr_output.txt")
+    # Save the OCR result to a file and generate a download link
     with open(output_file_path, 'w', encoding='utf-8') as f:
         f.write(ocr_text)
-    st.write(f"OCR output saved to: {output_file_path}")
+
+    # Provide the download link to the user
+    with open(output_file_path, "r") as file:
+        btn = st.download_button(
+            label="Download OCR Output",
+            data=file,
+            file_name=output_file_path,
+            mime="text/plain"
+        )
+
+    # Optionally display some part of the output in the app
+    st.subheader(f"Extracted OCR Text from {uploaded_pdf.name}")
+    st.text_area("OCR Output (partial)", ocr_text[:500], height=200)  # Display first 500 characters
+
+    # Inform the user that the result is ready for download
+    st.write(f"OCR output is ready for download as {output_file_path}")
