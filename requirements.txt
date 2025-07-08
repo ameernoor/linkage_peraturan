@@ -3,3 +3,4 @@ pandas
 fitz
 pytesseract
 Pillow
+PyMuPDF
