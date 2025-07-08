@@ -56,25 +56,22 @@ if uploaded_pdf is not None:
     for image in images:
         ocr_text += ocr_image(image)
     
-    # Create a download link for the OCR result
-    output_file_path = f"{uploaded_pdf.name}_ocr_output.txt"
+    # Create a download link for the OCR result using in-memory file
+    output_file = BytesIO()  # Create an in-memory file object
+    output_file.write(ocr_text.encode('utf-8'))
+    output_file.seek(0)  # Go to the beginning of the file after writing
     
-    # Save the OCR result to a file and generate a download link
-    with open(output_file_path, 'w', encoding='utf-8') as f:
-        f.write(ocr_text)
-
     # Provide the download link to the user
-    with open(output_file_path, "r") as file:
-        btn = st.download_button(
-            label="Download OCR Output",
-            data=file,
-            file_name=output_file_path,
-            mime="text/plain"
-        )
+    st.download_button(
+        label="Download OCR Output",
+        data=output_file,
+        file_name=f"{uploaded_pdf.name}_ocr_output.txt",
+        mime="text/plain"
+    )
 
     # Optionally display some part of the output in the app
     st.subheader(f"Extracted OCR Text from {uploaded_pdf.name}")
     st.text_area("OCR Output (partial)", ocr_text[:500], height=200)  # Display first 500 characters
 
     # Inform the user that the result is ready for download
-    st.write(f"OCR output is ready for download as {output_file_path}")
+    st.write(f"OCR output is ready for download as {uploaded_pdf.name}_ocr_output.txt")
