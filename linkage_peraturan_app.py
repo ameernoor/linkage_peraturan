@@ -10,7 +10,8 @@ pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tessera
 
 # Function to extract images from PDF
 def extract_images_from_pdf(pdf_file):
-    doc = fitz.open(pdf_file)
+    # Open the in-memory PDF file using BytesIO
+    doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
     images = []
     
     for page_num in range(doc.page_count):
