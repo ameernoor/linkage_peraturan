@@ -1,6 +1,6 @@
 streamlit
 pandas
 fitz
-easyocr
+tesseract
 Pillow
 PyMuPDF
