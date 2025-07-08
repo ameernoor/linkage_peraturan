@@ -1,12 +1,12 @@
 import streamlit as st
 import os
 import fitz  # PyMuPDF
-import easyocr  # EasyOCR as an alternative to pytesseract
+import pytesseract
 from PIL import Image
 from io import BytesIO
 
-# Initialize the EasyOCR reader (with default languages)
-reader = easyocr.Reader(['en'])
+# Set the path to the Tesseract executable
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # Ensure this is correct
 
 # Function to extract images from PDF
 def extract_images_from_pdf(pdf_file):
@@ -27,19 +27,9 @@ def extract_images_from_pdf(pdf_file):
     
     return images
 
-# Function to apply OCR to an image using EasyOCR
+# Function to apply OCR to an image
 def ocr_image(image):
-    # Convert PIL Image to bytes
-    img_byte_arr = BytesIO()
-    image.save(img_byte_arr, format='PNG')
-    img_byte_arr = img_byte_arr.getvalue()
-    
-    # Use EasyOCR to perform OCR on the image bytes
-    result = reader.readtext(img_byte_arr)
-    
-    # Join all the detected text
-    ocr_text = " ".join([text[1] for text in result])
-    return ocr_text
+    return pytesseract.image_to_string(image)
 
 # Streamlit UI setup
 st.title("Regulation Document OCR Processor")
@@ -56,22 +46,25 @@ if uploaded_pdf is not None:
     for image in images:
         ocr_text += ocr_image(image)
     
-    # Create a download link for the OCR result using in-memory file
-    output_file = BytesIO()  # Create an in-memory file object
-    output_file.write(ocr_text.encode('utf-8'))
-    output_file.seek(0)  # Go to the beginning of the file after writing
+    # Create a download link for the OCR result
+    output_file_path = f"{uploaded_pdf.name}_ocr_output.txt"
     
+    # Save the OCR result to a file and generate a download link
+    with open(output_file_path, 'w', encoding='utf-8') as f:
+        f.write(ocr_text)
+
     # Provide the download link to the user
-    st.download_button(
-        label="Download OCR Output",
-        data=output_file,
-        file_name=f"{uploaded_pdf.name}_ocr_output.txt",
-        mime="text/plain"
-    )
+    with open(output_file_path, "r") as file:
+        btn = st.download_button(
+            label="Download OCR Output",
+            data=file,
+            file_name=output_file_path,
+            mime="text/plain"
+        )
 
     # Optionally display some part of the output in the app
     st.subheader(f"Extracted OCR Text from {uploaded_pdf.name}")
     st.text_area("OCR Output (partial)", ocr_text[:500], height=200)  # Display first 500 characters
 
     # Inform the user that the result is ready for download
-    st.write(f"OCR output is ready for download as {uploaded_pdf.name}_ocr_output.txt")
+    st.write(f"OCR output is ready for download as {output_file_path}")
